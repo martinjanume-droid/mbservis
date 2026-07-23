@@ -40,6 +40,11 @@
     toggle && toggle.setAttribute('aria-expanded', 'false');
     document.body.style.overflow = '';
     syncToggleIcon(false);
+    nav.querySelectorAll('.nav__item.is-open').forEach(function (item) {
+      item.classList.remove('is-open');
+      var link = item.querySelector(':scope > a');
+      if (link) link.setAttribute('aria-expanded', 'false');
+    });
   }
   if (toggle) {
     toggle.addEventListener('click', function () {
@@ -51,6 +56,24 @@
     });
   }
   backdrop && backdrop.addEventListener('click', closeNav);
+
+  /* Mobilní podmenu (Služby) — klik rozbalí/sbalí, nezavírá celé menu */
+  if (nav) {
+    nav.querySelectorAll('.nav__item').forEach(function (item) {
+      var link = item.querySelector(':scope > a');
+      var sub = item.querySelector('.dropdown');
+      if (!link || !sub) return;
+      link.addEventListener('click', function (e) {
+        if (window.matchMedia('(max-width: 1024px)').matches) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          var isOpen = item.classList.toggle('is-open');
+          link.setAttribute('aria-expanded', String(isOpen));
+        }
+      });
+    });
+  }
+
   nav && nav.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeNav); });
   window.addEventListener('resize', function () { if (window.innerWidth > 1024) closeNav(); });
 
@@ -58,10 +81,22 @@
   document.querySelectorAll('.acc__q').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var acc = btn.closest('.acc');
+      var faq = btn.closest('.faq');
       var body = acc.querySelector('.acc__a');
-      var open = acc.classList.toggle('is-open');
-      btn.setAttribute('aria-expanded', String(open));
-      body.style.maxHeight = open ? body.scrollHeight + 'px' : '0';
+      var willOpen = !acc.classList.contains('is-open');
+      if (faq) {
+        faq.querySelectorAll('.acc.is-open').forEach(function (openAcc) {
+          if (openAcc === acc) return;
+          openAcc.classList.remove('is-open');
+          var openBtn = openAcc.querySelector('.acc__q');
+          var openBody = openAcc.querySelector('.acc__a');
+          if (openBtn) openBtn.setAttribute('aria-expanded', 'false');
+          if (openBody) openBody.style.maxHeight = '0';
+        });
+      }
+      acc.classList.toggle('is-open', willOpen);
+      btn.setAttribute('aria-expanded', String(willOpen));
+      body.style.maxHeight = willOpen ? body.scrollHeight + 'px' : '0';
     });
   });
 
