@@ -1,0 +1,64 @@
+# ===== MB Servis Production — .htaccess =====
+
+# --- Bezpečnostní hlavičky ---
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+RewriteEngine On
+
+# --- Kanonická doména: www -> bez www ---
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+# --- Staré ploché URL z prvního draftu -> nová struktura /sluzby/... ---
+RewriteRule ^plesy/?$ /sluzby/maturitni-plesy/ [R=301,L]
+RewriteRule ^plesy\.html$ /sluzby/maturitni-plesy/ [R=301,L]
+RewriteRule ^firemni-akce/?$ /sluzby/firemni-vecirky/ [R=301,L]
+RewriteRule ^firemni-akce\.html$ /sluzby/firemni-vecirky/ [R=301,L]
+RewriteRule ^ozvuceni-technika/?$ /sluzby/ozvuceni/ [R=301,L]
+RewriteRule ^ozvuceni-technika\.html$ /sluzby/ozvuceni/ [R=301,L]
+RewriteRule ^led-obrazovka/?$ /videoprojekce/ [R=301,L]
+RewriteRule ^led-obrazovka\.html$ /videoprojekce/ [R=301,L]
+RewriteRule ^fotokoutek/?$ /sluzby/fotokoutek/ [R=301,L]
+RewriteRule ^fotokoutek\.html$ /sluzby/fotokoutek/ [R=301,L]
+RewriteRule ^kapely-dj/?$ /sluzby/kapely-dj/ [R=301,L]
+RewriteRule ^kapely-dj\.html$ /sluzby/kapely-dj/ [R=301,L]
+
+# --- Staré URL z živého webu, které tato verze zatím nemá jako vlastní stránku ---
+# (přesměrováno na nejbližší odpovídající novou stránku, aby se neztratila SEO hodnota)
+RewriteRule ^konference/?$ /sluzby/ [R=301,L]
+RewriteRule ^festivaly/?$ /sluzby/ [R=301,L]
+RewriteRule ^podiova-technika/?$ /sluzby/ozvuceni/ [R=301,L]
+RewriteRule ^sluzby/rental/?$ /sluzby/ozvuceni/ [R=301,L]
+RewriteRule ^sluzby/svetelna-technika/?$ /sluzby/ozvuceni/ [R=301,L]
+RewriteRule ^sluzby/sportovni-udalosti/?$ /sluzby/firemni-vecirky/ [R=301,L]
+RewriteRule ^sluzby/spolecenske-udalosti/?$ /sluzby/ [R=301,L]
+RewriteRule ^sluzby/zelivopenair/?$ /sluzby/firemni-vecirky/ [R=301,L]
+
+# --- Odstranění koncového .html z jakékoli jiné URL (bezpečnostní pojistka) ---
+RewriteCond %{THE_REQUEST} \s/+([^.\s?]+)\.html[\s?] [NC]
+RewriteRule ^ /%1/ [R=301,L]
+
+# --- Chybová stránka ---
+ErrorDocument 404 /404.html
+
+# --- Komprese ---
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml application/json
+</IfModule>
+
+# --- Cache statických assetů ---
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/webp "access plus 6 months"
+  ExpiresByType image/jpeg "access plus 6 months"
+  ExpiresByType image/png "access plus 6 months"
+</IfModule>
